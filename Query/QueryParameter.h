@@ -1,0 +1,8 @@
+//
+// Created by subha on 10/10/2023.
+//
+
+#ifndef MGRID_QUERYPARAMETER_H
+#define MGRID_QUERYPARAMETER_H
+
+#endif //MGRID_QUERYPARAMETER_H
