@@ -9,7 +9,92 @@ using namespace std;
 
 MGrid::MGrid(const vector<vector<double>> &metricObjects, const int numberOfPivots, const int numberOfRings,
              const int queryIndex, const int numberOfClusters)
-        : metricObjects(metricObjects), numberOfPivots(numberOfPivots), numberOfRings(numberOfRings) {
+        : metricObjects(metricObjects), numberOfPivots(numberOfPivots), numberOfRings(numberOfRings), numberOfClusters(numberOfClusters) {
+
+//    vector<long> result;
+//
+//    // Step 1: Select the Pivot using Incremental Selection algorithm
+//    int sample_size = 10;
+//    auto startPivots = std::chrono::high_resolution_clock::now();
+//    pivots = PivotIncrementalSelection::selectPivots(metricObjects, numberOfPivots, numberOfRings, sample_size);
+//    auto endPivots = std::chrono::high_resolution_clock::now();
+//
+//    auto durationToSelectPivots = std::chrono::duration_cast<std::chrono::milliseconds>(endPivots - startPivots);
+//
+//    cout << "Time taken to select the pivots: " << durationToSelectPivots.count() << " ms" << endl;
+//    result.push_back(durationToSelectPivots.count());
+//
+//    //double queryDistance = PivotIncrementalSelection::vectorDistance(pivots[0], metricObjects[5]);
+//
+//    // Step 2: Then select rings such that there are equal number of object in each rings for each pivot.
+//    //  mapOfPivotsToIndexRings = createRings(metricObjects, pivots, numberOfRings);
+//
+//    auto startRings = std::chrono::high_resolution_clock::now();
+//
+//    mapOfPivotIndexToMapOfRingsToDataIndexes = creatRings(metricObjects, pivots, numberOfRings);
+//
+//    auto endRings = std::chrono::high_resolution_clock::now();
+//
+//    auto durationToSelectRings = std::chrono::duration_cast<std::chrono::milliseconds>(endRings - startRings);
+//
+//    cout << "Time taken to select the rings: " << durationToSelectRings.count() << " ms" << endl;
+//    result.push_back(durationToSelectRings.count());
+//
+//    map<int, map<int, pair<double, double>>> mapOfPivotToListOfMinMaxDistancesToRings =
+//            getMapOfPivotToListOfMinMaxDistancesToRings(
+//                    mapOfPivotIndexToMapOfRingsToDataIndexes,
+//                    metricObjects,
+//                    pivots
+//            );
+//
+//    auto startCluster = std::chrono::high_resolution_clock::now();
+//
+//    // Step 3: Cluster the object using K-means clustering Algorithm.
+//    // Create a map to store the cluster centroids
+//    clusters = Cluster::clusterData(metricObjects, numberOfClusters, 100);
+//
+//    getMetaDataCluster(metricObjects, &clusters, &mapOfPivotToListOfMinMaxDistancesToRings);
+//
+//    auto endCluster = std::chrono::high_resolution_clock::now();
+//
+//    auto durationToClusterData = std::chrono::duration_cast<std::chrono::milliseconds>(endCluster - startCluster);
+//
+//    cout << "Time taken to cluster the data: " << durationToClusterData.count() << " ms" << endl;
+//    result.push_back(durationToClusterData.count());
+//
+//    auto durationToBuildMGrid = std::chrono::duration_cast<std::chrono::milliseconds>(endCluster - startPivots);
+//
+//    cout << "Time taken to build MGrid: " << durationToBuildMGrid.count() << " ms" << endl;
+//    result.push_back(durationToBuildMGrid.count());
+//
+//    auto nnSearchStart = std::chrono::high_resolution_clock::now();
+//
+//    // Objects are clustered based on their distances to pivots so objects occurring in the same rings
+//    // will be places in the same clusters.
+//    int nnResult = nnSearchAlgorithm(
+//                pivots,
+//                &mapOfPivotToListOfMinMaxDistancesToRings,
+//                metricObjects[queryIndex],
+//                metricObjects,
+//                clusters
+//            );
+//
+//    cout << "result " << nnResult << endl;
+//    result.push_back(nnResult);
+//
+//    auto nnSearchEnd = std::chrono::high_resolution_clock::now();
+//
+//    auto durationForNNSearch = std::chrono::duration_cast<std::chrono::milliseconds>(nnSearchEnd - nnSearchStart);
+//
+//    cout << "Time taken for NN search: " << durationForNNSearch.count() << " ms" << endl;
+//    result.push_back(durationForNNSearch.count());
+//
+//    return result;
+}
+
+vector<long> MGrid::buildAndSearch(int queryIndex) {
+
+    vector<long> result;
 
     // Step 1: Select the Pivot using Incremental Selection algorithm
     int sample_size = 10;
@@ -20,6 +105,7 @@ MGrid::MGrid(const vector<vector<double>> &metricObjects, const int numberOfPivo
     auto durationToSelectPivots = std::chrono::duration_cast<std::chrono::milliseconds>(endPivots - startPivots);
 
     cout << "Time taken to select the pivots: " << durationToSelectPivots.count() << " ms" << endl;
+    result.push_back(durationToSelectPivots.count());
 
     //double queryDistance = PivotIncrementalSelection::vectorDistance(pivots[0], metricObjects[5]);
 
@@ -35,6 +121,7 @@ MGrid::MGrid(const vector<vector<double>> &metricObjects, const int numberOfPivo
     auto durationToSelectRings = std::chrono::duration_cast<std::chrono::milliseconds>(endRings - startRings);
 
     cout << "Time taken to select the rings: " << durationToSelectRings.count() << " ms" << endl;
+    result.push_back(durationToSelectRings.count());
 
     map<int, map<int, pair<double, double>>> mapOfPivotToListOfMinMaxDistancesToRings =
             getMapOfPivotToListOfMinMaxDistancesToRings(
@@ -56,30 +143,36 @@ MGrid::MGrid(const vector<vector<double>> &metricObjects, const int numberOfPivo
     auto durationToClusterData = std::chrono::duration_cast<std::chrono::milliseconds>(endCluster - startCluster);
 
     cout << "Time taken to cluster the data: " << durationToClusterData.count() << " ms" << endl;
+    result.push_back(durationToClusterData.count());
 
     auto durationToBuildMGrid = std::chrono::duration_cast<std::chrono::milliseconds>(endCluster - startPivots);
 
     cout << "Time taken to build MGrid: " << durationToBuildMGrid.count() << " ms" << endl;
+    result.push_back(durationToBuildMGrid.count());
 
     auto nnSearchStart = std::chrono::high_resolution_clock::now();
 
     // Objects are clustered based on their distances to pivots so objects occurring in the same rings
     // will be places in the same clusters.
     int nnResult = nnSearchAlgorithm(
-                pivots,
-                &mapOfPivotToListOfMinMaxDistancesToRings,
-                metricObjects[queryIndex],
-                metricObjects,
-                clusters
-            );
+            pivots,
+            &mapOfPivotToListOfMinMaxDistancesToRings,
+            metricObjects[queryIndex],
+            metricObjects,
+            clusters
+    );
 
     cout << "result " << nnResult << endl;
+    result.push_back(nnResult);
 
     auto nnSearchEnd = std::chrono::high_resolution_clock::now();
 
     auto durationForNNSearch = std::chrono::duration_cast<std::chrono::milliseconds>(nnSearchEnd - nnSearchStart);
 
     cout << "Time taken for NN search: " << durationForNNSearch.count() << " ms" << endl;
+    result.push_back(durationForNNSearch.count());
+
+    return result;
 }
 
 void MGrid::getMetaDataCluster(

@@ -28,6 +28,8 @@ int main() {
     // Step 3: DataSetGenerator MGrid
     MGrid mGrid(metricObjects, numberOfPivots, numberOfRings, queryIndex, numberOfClusters);
 
+    mGrid.buildAndSearch(queryIndex);
+
     auto end = std::chrono::high_resolution_clock::now();
 
     auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
