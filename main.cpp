@@ -3,29 +3,38 @@
 #include "Query/Query.h"
 #include "Query/MGridQuery.h"
 #include "GenerateData/DataSetGenerator.h"
+#include <chrono>
+
+using namespace std::chrono;
 
 int main() {
 
     // Generate the data set:
-    DataSetGenerator dataSetGenerator(7);
+    DataSetGenerator dataSetGenerator(10000, 64);
 
     // Step 1: Get Data set
-    vector<vector<double>> metricObjects = dataSetGenerator.generateDataUsingUniformDistribution();
-    //
-
-//    vector<MetricObject> metricObjects;
+    vector<vector<double>> metricObjects = dataSetGenerator.generateDataNonUniformDistribution();
 
     // Step 2: Determine the number of Pivots and number of rings
     // Question: How we will determine it? What parameters should we consider?
     // to-do
-    long numberOfPivots = 1;
-    long numberOfRings = 3;
+    long numberOfPivots = 4;
+    long numberOfRings = 5;
+    long queryIndex = 100;
+    long numberOfClusters = 20;
+
+    auto start = std::chrono::high_resolution_clock::now();
 
     // Step 3: DataSetGenerator MGrid
-    MGrid mGrid(metricObjects, numberOfPivots, numberOfRings);
+    MGrid mGrid(metricObjects, numberOfPivots, numberOfRings, queryIndex, numberOfClusters);
+
+    auto end = std::chrono::high_resolution_clock::now();
+
+    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+
+    cout << "Time takes to run the whole query " << duration.count() << " ms" << endl;
 
     vector<vector<double>> pivots = mGrid.getPivots();
-
 
     vector<Cluster> clusters = mGrid.getCluster();
 
@@ -35,22 +44,6 @@ int main() {
     // Step 5: Insert Objects to the MGrid:
     MetricObject objectToBeInserted;
     mGridQuery->insert(objectToBeInserted);
-
-    // Step 6: Construct the query parameter
-    // Question: In the query parameter, what is the query object? Is it a metricObject.
-    // How we will decide the query parameters?
-    // How to determine the radius?
-//    MetricObject queryObject;
-//    float radius = 0;
-//
-//    QueryParameter queryParameter(queryObject, pivots, clusters, radius);
-//
-//    // Step 7: search object
-//    vector<MetricObject> searchedObject = mGridQuery->search(queryParameter);
-//
-//    // Step 8: delete inserted object
-//    MetricObject objectToBeDeleted = searchedObject[0];
-//    mGridQuery->deleteObject(objectToBeDeleted);
 
     return 0;
 }

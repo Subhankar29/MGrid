@@ -5,12 +5,15 @@
 
 class DataSetGenerator {
 public:
-    DataSetGenerator(int n);
+    DataSetGenerator(int n, int m);
 
     std::vector<std::vector<double>> generateDataUsingUniformDistribution() const;
 
+    std::vector<std::vector<double>> generateDataNonUniformDistribution() const;
+
 private:
-    int n;
+    int numberOfRows;
+    int numberOfCols;
 };
 
 #endif // DATASET_GENERATOR_H

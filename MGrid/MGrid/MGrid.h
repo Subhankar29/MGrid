@@ -35,7 +35,8 @@ class MGrid {
 
   public:
     explicit MGrid(const vector<vector<double>> &metricObject,
-                   int numberOfPivots, int numberOfRings);
+                   int numberOfPivots, int numberOfRings, int queryIndex, int numberOfClusters);
+
     virtual vector<Cluster> getCluster();
     map<int, vector<Ring>> getRingsForPivot();
     virtual vector<vector<double>> getPivots();
@@ -45,7 +46,7 @@ class MGrid {
     static int visitCluster(vector<vector<double>> data,
                             vector<double> queryObject, Cluster cluster,
                             double *currentNearestNeighbourDistance);
-    static void nnSearchAlgorithm(vector<vector<double>> pivots,
+    static int nnSearchAlgorithm(vector<vector<double>> pivots,
                                   map<int, map<int, pair<double, double>>>
                                       *mapOfPivotToListOfMinMaxDistancesToRings,
                                   vector<double> queryObject,
