@@ -1,14 +1,22 @@
-//
-// Created by subha on 10/10/2023.
-//
+#ifndef MGRID_PIVOTINCREMENTALSELECTION_H
+#define MGRID_PIVOTINCREMENTALSELECTION_H
 
-#ifndef MGRID_PIVOT_H
-#define MGRID_PIVOT_H
-#include "../../MetricObject/MetricObject.h"
+#include "../../MetricStructs/MetricObject.h"
+#include "Pivot.h"
+#include <iostream>
+#include <vector>
 
-class Pivot {
-    virtual double distance(metricObject metricObject) const = 0;
+using namespace std;
+
+class PivotIncrementalSelection {
+public:
+    static vector<vector<double>> selectPivots(
+            const vector<vector<double>> &metrics,
+            int numberOfPivots,
+            int numberOfRings,
+            int sampleSize);
+
+    static double vectorDistance(vector<double> v1, vector<double> v2);
 };
 
-
-#endif //MGRID_PIVOT_H
+#endif //MGRID_PIVOTINCREMENTALSELECTION_H

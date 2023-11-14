@@ -3,11 +3,11 @@
 
 #include <vector>
 
-class DataSetGenerate {
+class DataSetGenerator {
 public:
-    DataSetGenerate(int n);
+    DataSetGenerator(int n);
 
-    std::vector<std::vector<double>> generate();
+    std::vector<std::vector<double>> generateDataUsingUniformDistribution() const;
 
 private:
     int n;
