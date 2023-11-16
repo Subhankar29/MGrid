@@ -16,12 +16,18 @@ public:
     vector<vector<double>> points;
     map<int, pair<int, int>> pivotToRingResidingOfCluster;
     bool isPruned;
+    int centroidIndex;
 
 public:
     map<int, vector<int>> getMetaData();
+
     vector<double> getMean();
+
     static vector<Cluster> clusterData(vector<vector<double>> data, int k, int maxIterations);
+
     static vector<vector<double>> getCentroids(vector<vector<double>> data, int k, int maxIterations);
+
+    static vector<Cluster> kMeansClustering(vector<vector<double>>* data, int k, int maxIterations);
 };
 
 #endif //MGRID_CLUSTER_H

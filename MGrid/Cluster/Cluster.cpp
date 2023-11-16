@@ -3,6 +3,73 @@
 #include <cfloat>
 #include "../Pivot/PivotIncrementalSelection.h"
 
+struct Point {
+  int index;
+  int clusterId = -1;
+  double minDist = DBL_MAX;
+};
+
+vector<Cluster> Cluster::kMeansClustering(vector<vector<double>>* data, int k, int maxIterations) {
+  // Initialise the centroids
+  vector<Cluster> clusters(k);
+  vector<Point> points(data->size());
+
+  int dataSize = (*data).size();
+
+  srand(time(0));
+
+  for (int i = 0; i  < k; ++i) {
+    clusters[i].centroid = data->at(rand() % dataSize);
+  }
+
+  int count = 0;
+  while (count < maxIterations){
+    count++;
+
+    // set datapoint to the nearest index:
+    for (int c = 0; c < clusters.size(); c++) {
+      for (int p = 0; p < dataSize; p++) {
+        double dist = PivotIncrementalSelection::vectorDistance(clusters[c].centroid, (*data)[p]);
+
+        if (dist < points[p].minDist) {
+          points[p].minDist = dist;
+          points[p].clusterId = c;
+        }
+      }
+    }
+
+    for (int c = 0; c < clusters.size(); c++) {
+      clusters[c].listOfIndexes = {};
+    }
+
+    // Append the centroid
+    for (int p = 0; p < dataSize; p++) {
+      int clusterId = points[p].clusterId;
+
+      for (int d = 0; d < (*data)[0].size(); d++) {
+        clusters[clusterId].centroid[d] += (*data)[p][d];
+      }
+
+      clusters[clusterId].listOfIndexes.push_back(p);
+      points[p].minDist = DBL_MAX;
+    }
+
+    // Compute the new centroids
+    for (int c = 0; c < clusters.size(); c++) {
+      double total;
+      for (int m = 0; m < clusters[c].centroid.size(); m++) {
+        clusters[c].centroid[m] =
+            clusters[c].centroid[m]/(double) clusters[c].listOfIndexes.size();
+
+        total += clusters[c].centroid[m];
+      }
+
+    }
+  }
+
+  return clusters;
+}
+
 vector<Cluster> Cluster::clusterData(vector<vector<double>> data, int k, int maxIterations) {
     vector<vector<double>> centroids = getCentroids(data, k, maxIterations);
     vector<Cluster> clusters(centroids.size());

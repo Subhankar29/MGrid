@@ -4,6 +4,7 @@
 #include <map>
 #include <utility>
 #include <chrono>
+#include <algorithm>
 
 using namespace std;
 
@@ -53,7 +54,8 @@ vector<long> MGrid::buildAndSearch(int queryIndex) {
 
     // Step 3: Cluster the object using K-means clustering Algorithm.
     // Create a map to store the cluster centroids
-    clusters = Cluster::clusterData(metricObjects, numberOfClusters, 100);
+//    clusters = Cluster::clusterData(metricObjects, numberOfClusters, 100);
+    clusters = Cluster::kMeansClustering(&metricObjects, numberOfClusters, 100);
 
     getMetaDataCluster(metricObjects, &clusters, &mapOfPivotToListOfMinMaxDistancesToRings);
 
@@ -420,49 +422,3 @@ int MGrid::visitCluster(
 
     return nearestNeighborObject;
 }
-
-
-/*
-map<int, vector<Ring>> MGrid::createRings(
-        vector<vector<double>> metrics,
-        vector<vector<double>> pivots,
-        int numberOfRings) {
-
-map<int, vector<Ring>> ringMap;
-
-for (int i = 0; i < pivots.size(); i++) {
-
-  // Get distances to pivot
-  std::vector<double> distances;
-  for (auto& point : metrics) {
-    double distance = PivotIncrementalSelection::vectorDistance(point, pivots[i]);
-    distances.push_back(distance);
-  }
-
-  // Determine min and max dist
-  double minDist = *std::min_element(distances.begin(), distances.end());
-  double maxDist = *std::max_element(distances.begin(), distances.end());
-
-  // Compute interval size
-  double interval = (maxDist - minDist) / numberOfRings;
-
-  // Generate ring distances
-  vector<Ring> ringDist;
-  ringDist.reserve(numberOfRings);
-  Ring prev{minDist , minDist};
-
-  for (int r = 0; r < numberOfRings; r++) {
-    Ring ring{};
-    ring.minDist = prev.maxDist;
-    ring.maxDist = ring.minDist + interval;
-
-    ringDist.push_back(ring);
-    prev = ring;
-  }
-
-  ringMap[i] = ringDist;
-}
-
-return ringMap;
-}
-*/
