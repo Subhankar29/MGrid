@@ -14,8 +14,6 @@ class MGrid {
   private:
     vector<vector<double>> metricObjects;
 
-    vector<Cluster> clusters;
-
     vector<Cluster> createCluster(vector<vector<double>> &metricObject,
                                   int numberOfCluster);
 
@@ -55,23 +53,24 @@ class MGrid {
     creatRings(vector<vector<double>> metricObject, vector<vector<double>>,
                int numberOfPivots);
 
-    static int visitCluster(vector<vector<double>> data,
-                            vector<double> queryObject, Cluster cluster,
+    static int visitCluster(vector<vector<double>> *data,
+                            vector<double> *queryObject,
+                            Cluster *cluster,
                             double *currentNearestNeighbourDistance);
 
-    static int nnSearchAlgorithm(vector<vector<double>> pivots,
+    static int nnSearchAlgorithm(vector<vector<double>> *pivots,
                                   map<int, map<int, pair<double, double>>>
                                       *mapOfPivotToListOfMinMaxDistancesToRings,
-                                  vector<double> queryObject,
-                                  vector<vector<double>> data,
-                                  vector<Cluster> clusters);
+                                  vector<double> *queryObject,
+                                  vector<vector<double>> *data,
+                                  vector<Cluster> *clusters);
 
     static void pruneClusters(
-        vector<double> queryObject,
-        double radius,
-        vector<Cluster>* activeClusters,
-        map<int, map<int, pair<double, double>>> mapOfPivotToListOfMinMaxDistancesToRings,
-        vector<vector<double>> pivots);
+        vector<double> *queryObject,
+        double *radius,
+        vector<Cluster> *activeClusters,
+        map<int, map<int, pair<double, double>>> *mapOfPivotToListOfMinMaxDistancesToRings,
+        vector<vector<double>> *pivots);
 };
 
 #endif //MGRID_MGRID_H

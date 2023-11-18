@@ -24,13 +24,13 @@ int main() {
     vector<long> correctAns;
     vector<long> nnSearchTime;
 
-    vector<int> numberOfObjects = {100, 10000, 50000, 100000, 250000, 500000, 750000, 1000000};
+    vector<int> numberOfObjects = {1000000};
 
     for (int i = 0; i < numberOfObjects.size(); i++) {
       // Step 2: Determine the number of Pivots and number of rings
       // Question: How we will determine it? What parameters should we consider?
       // to-do
-      long numberOfPivots = 4;
+      long numberOfPivots = 10;
       long numberOfRings = 10;
       long queryIndex =  numberOfObjects[i] - 1;
       long numberOfClusters = 10;
@@ -39,10 +39,11 @@ int main() {
       cout << " Number of pivots : " << numberOfPivots << " number of Rings  " << numberOfRings << " number of Clusters " <<  numberOfClusters << endl;
 
       // Generate the data set:
-      DataSetGenerator dataSetGenerator(numberOfObjects[i], 64);
+      DataSetGenerator dataSetGenerator(numberOfObjects[i], 512);
 
       // Step 1: Get Data set
       vector<vector<double>> metricObjects = dataSetGenerator.generateDataNonUniformDistribution();
+//      vector<vector<double>> metricObjects = dataSetGenerator.generateDataUsingUniformDistribution();
       MGrid mGrid(metricObjects, numberOfPivots, numberOfRings, queryIndex, numberOfClusters);
 
       vector<long> results = mGrid.buildAndSearch(queryIndex);

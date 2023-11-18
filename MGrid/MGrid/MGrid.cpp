@@ -16,6 +16,8 @@ vector<long> MGrid::buildAndSearch(int queryIndex) {
 
     vector<long> result;
 
+    vector<Cluster> clusters(numberOfClusters);
+
     // Step 1: Select the Pivot using Incremental Selection algorithm
     int sample_size = 10;
     auto startPivots = std::chrono::high_resolution_clock::now();
@@ -76,11 +78,11 @@ vector<long> MGrid::buildAndSearch(int queryIndex) {
     // Objects are clustered based on their distances to pivots so objects occurring in the same rings
     // will be places in the same clusters.
     int nnResult = nnSearchAlgorithm(
-            pivots,
+            &pivots,
             &mapOfPivotToListOfMinMaxDistancesToRings,
-            metricObjects[queryIndex],
-            metricObjects,
-            clusters
+            &metricObjects[queryIndex],
+            &metricObjects,
+            &clusters
     );
 
 //    cout << "result " << nnResult << endl;
@@ -157,19 +159,19 @@ void MGrid::getMetaDataCluster(
 }
 
 void MGrid::pruneClusters(
-        vector<double> queryObject,
-        double radius,
+        vector<double> *queryObject,
+        double *radius,
         vector<Cluster> *activeClusters,
-        map<int, map<int, pair<double, double>>> mapOfPivotToListOfMinMaxDistancesToRings,
-        vector<vector<double>> pivots) {
+        map<int, map<int, pair<double, double>>> *mapOfPivotToListOfMinMaxDistancesToRings,
+        vector<vector<double>> *pivots) {
 
-    for (auto &outerIt: mapOfPivotToListOfMinMaxDistancesToRings) {
+    for (auto &outerIt: *mapOfPivotToListOfMinMaxDistancesToRings) {
         int pivotId = outerIt.first;
 
-        double distancePivotToQueryObject = PivotIncrementalSelection::vectorDistance(pivots[pivotId], queryObject);
+        double distancePivotToQueryObject = PivotIncrementalSelection::vectorDistance((*pivots)[pivotId], *queryObject);
 
-        double querySpaceStartPoint = distancePivotToQueryObject - radius;
-        double querySpaceEndPoint = distancePivotToQueryObject + radius;
+        double querySpaceStartPoint = distancePivotToQueryObject - *radius;
+        double querySpaceEndPoint = distancePivotToQueryObject + *radius;
 
         int querySpaceRingStartIndex = -1;
         int querySpaceRingEndIndex = -1;
@@ -186,7 +188,7 @@ void MGrid::pruneClusters(
                 querySpaceStartPoint <= ringEndDistanceFromPivot) {
                 querySpaceRingStartIndex = ringId;
             }
-
+            // TODO: change it to: if querySpaceRingStartIndex != -1 && querySpaceEndPoint < ringEndDistanceFromPivot
             if (ringStartDistanceFromPivot <= querySpaceEndPoint) {
                 querySpaceRingEndIndex = ringId;
             }
@@ -199,7 +201,7 @@ void MGrid::pruneClusters(
         for (int i = 0; i < activeClusters->size(); i++) {
             int clusterStartRingId = (*activeClusters)[i].pivotToRingResidingOfCluster[pivotId].first;
             int clusterEndRingId = (*activeClusters)[i].pivotToRingResidingOfCluster[pivotId].second;
-
+//          TODO: if the current cluster is not pruned add this condition
             if ((querySpaceRingStartIndex <= clusterStartRingId && clusterStartRingId <= querySpaceRingEndIndex)
                 || (querySpaceRingStartIndex <= clusterEndRingId && clusterEndRingId <= querySpaceRingEndIndex)) {
                 continue;
@@ -217,11 +219,13 @@ bool compareDist(const pair<Cluster, double> &p1, const pair<Cluster, double> &p
 }
 
 int MGrid::nnSearchAlgorithm(
-        vector<vector<double>> pivots,
+        vector<vector<double>> *pivots,
         map<int, map<int, pair<double, double>>> *mapOfPivotToListOfMinMaxDistancesToRings,
-        vector<double> queryObject,
-        vector<vector<double>> data,
-        vector<Cluster> clusters) {
+        vector<double> *queryObject,
+        vector<vector<double>> *data,
+        vector<Cluster> *clusters) {
+
+  auto nnSearchStart = std::chrono::high_resolution_clock::now();
 
     typedef pair<Cluster, double> clusterPair;
     vector<clusterPair> clusterDistanceArray;
@@ -231,8 +235,8 @@ int MGrid::nnSearchAlgorithm(
     double nearestNeighbourDistance = numeric_limits<double>::max();
     double currentNearestNeighbourDistance = numeric_limits<double>::max();
 
-    for (auto &cluster: clusters) {
-        double distance = PivotIncrementalSelection::vectorDistance(cluster.mean, queryObject);
+    for (auto &cluster: *clusters) {
+        double distance = PivotIncrementalSelection::vectorDistance(cluster.mean, *queryObject);
         clusterPair cp(cluster, distance);
         clusterDistanceArray.push_back(cp);
     }
@@ -250,34 +254,42 @@ int MGrid::nnSearchAlgorithm(
 
     int i = 0;
 
-    int nearestNeighbourIndex = visitCluster(data, queryObject, activeClusters[i], &currentNearestNeighbourDistance);
+    int nearestNeighbourIndex = visitCluster(data, queryObject, &activeClusters[i], &currentNearestNeighbourDistance);
     nearestNeighbourDistance = currentNearestNeighbourDistance;
 
-    pruneClusters(queryObject, nearestNeighbourDistance, &activeClusters, *mapOfPivotToListOfMinMaxDistancesToRings,
+    pruneClusters(queryObject, &nearestNeighbourDistance, &activeClusters, mapOfPivotToListOfMinMaxDistancesToRings,
                   pivots);
 
     i++;
 
     // Prune the remaining cluster in a while loop.
-
     while (i < activeClusters.size()) {
 
         if (!activeClusters[i].isPruned) {
-            nearestNeighbourIndex = visitCluster(data, queryObject, activeClusters[i],
+            nearestNeighbourIndex = visitCluster(data, queryObject, &activeClusters[i],
                                                  &currentNearestNeighbourDistance);
 
             if (currentNearestNeighbourDistance < nearestNeighbourDistance) {
                 nearestNeighbourDistance = currentNearestNeighbourDistance;
-                pruneClusters(queryObject, nearestNeighbourDistance, &activeClusters,
-                              *mapOfPivotToListOfMinMaxDistancesToRings, pivots);
+                pruneClusters(queryObject, &nearestNeighbourDistance, &activeClusters,
+                              mapOfPivotToListOfMinMaxDistancesToRings, pivots);
+
+                if (nearestNeighbourDistance == 0) {
+                  return nearestNeighbourIndex;
+                }
             }
         }
 
         i++;
     }
 
-    return nearestNeighbourIndex;
+    auto nnSearchEnd = std::chrono::high_resolution_clock::now();
 
+    auto durationForNNSearch = std::chrono::duration_cast<std::chrono::milliseconds>(nnSearchEnd - nnSearchStart);
+
+    cout << "Final NN Search Algorithm search duration time : " << durationForNNSearch.count() << " ms " << endl;
+
+    return nearestNeighbourIndex;
 }
 
 map<int, vector<Ring>> MGrid::getRingsForPivot() {
@@ -285,7 +297,9 @@ map<int, vector<Ring>> MGrid::getRingsForPivot() {
 }
 
 vector<Cluster> MGrid::getCluster() {
-    return clusters;
+//    return clusters;
+    vector<Cluster> c;
+    return c;
 }
 
 vector<vector<double>> MGrid::getPivots() {
@@ -302,10 +316,9 @@ map<int, map<int, vector<int>>> MGrid::creatRings(
     // The inner created an index of the ring and vector<vector<double>> represents the rings
     map<int, map<int, vector<int>>> mapOfPivotsToMapOfRingsIndexesToTheDataPoints;
 
-    int ringSegmentCount = 1;
-
     // For each pivot calculate the distance to each object
     for (int i = 0; i < pivots.size(); i++) {
+        int ringSegmentCount = 1;
         vector<pair<double, vector<double>>> distances;
 
         // List Of Pair of index of the pivot to the list of points
@@ -338,8 +351,7 @@ map<int, map<int, vector<int>>> MGrid::creatRings(
             listOfDataPointsInARingSegment.push_back(indexOfDataPoint);
 
             if (isOdd) {
-                if (ringSegmentCount != numberOfRings &&
-                    listOfDataPointsInARingSegment.size() == totalNumberOfPointsInOneSegment) {
+                if (ringSegmentCount != numberOfRings && listOfDataPointsInARingSegment.size() == totalNumberOfPointsInOneSegment) {
                     mapOfRingIndexToDataPoints[ringSegmentCount] = listOfDataPointsInARingSegment;
                     listOfDataPointsInARingSegment.clear();
                     ringSegmentCount++;
@@ -369,9 +381,8 @@ map<int, map<int, pair<double, double>>> MGrid::getMapOfPivotToListOfMinMaxDista
         vector<vector<double>> pivots) {
     map<int, map<int, pair<double, double>>> mapOfPivotToListOfMinMaxDistancesToRings;
 
-    bool isFirst = true;
-
     for (const auto &pivotToRingsMap: mapOfPivotIndexToMapOfRingsToDataIndexes) {
+        bool isFirst = true;
         int pivotIndex = pivotToRingsMap.first;
         map<int, vector<int>> ringsToListOfIndexes = pivotToRingsMap.second;
         map<int, pair<double, double>> ringToMinMaxDistance;
@@ -407,13 +418,13 @@ map<int, map<int, pair<double, double>>> MGrid::getMapOfPivotToListOfMinMaxDista
 }
 
 int MGrid::visitCluster(
-        vector<vector<double>> data,
-        vector<double> queryObject,
-        Cluster cluster,
+        vector<vector<double>> *data,
+        vector<double> *queryObject,
+        Cluster *cluster,
         double *currentNearestNeighbourDistance) {
     int nearestNeighborObject;
-    for (auto index: cluster.listOfIndexes) {
-        double distance = PivotIncrementalSelection::vectorDistance(queryObject, data[index]);
+    for (auto index: cluster->listOfIndexes) {
+        double distance = PivotIncrementalSelection::vectorDistance(*queryObject, (*data)[index]);
         if (distance < *currentNearestNeighbourDistance) {
             nearestNeighborObject = index;
             *currentNearestNeighbourDistance = distance;

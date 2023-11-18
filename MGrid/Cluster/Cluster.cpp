@@ -56,13 +56,13 @@ vector<Cluster> Cluster::kMeansClustering(vector<vector<double>>* data, int k, i
 
     // Compute the new centroids
     for (int c = 0; c < clusters.size(); c++) {
-      double total;
+
       for (int m = 0; m < clusters[c].centroid.size(); m++) {
         clusters[c].centroid[m] =
             clusters[c].centroid[m]/(double) clusters[c].listOfIndexes.size();
-
-        total += clusters[c].centroid[m];
       }
+
+      clusters[c].mean = clusters[c].centroid;
 
     }
   }
