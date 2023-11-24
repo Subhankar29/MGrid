@@ -5,27 +5,27 @@
 using namespace std;
 
 vector<vector<double>> PivotIncrementalSelection::selectPivots(
-        const vector<vector<double>>& metrics,
-        int numberOfPivots,
-        int numberOfRings,
-        int sampleSize) {
-    vector<vector<double>> selectedPivots(numberOfPivots);
+        const vector<vector<double>> *metrics,
+        int *numberOfPivots,
+        int *numberOfRings,
+        int *sampleSize) {
+    vector<vector<double>> selectedPivots(*numberOfPivots);
 
     random_device randomDevice;
 
     mt19937 gen(randomDevice());
 
     // Select first pivot randomly
-    uniform_int_distribution<> dist(0, metrics.size() - 1);
+    uniform_int_distribution<> dist(0, metrics->size() - 1);
     int index = dist(gen);
 
-    selectedPivots[0] = metrics[index];
+    selectedPivots[0] = (*metrics)[index];
 
     // Select subsequent pivots incrementally
-    for (int i = 1; i < numberOfPivots; i++) {
+    for (int i = 1; i < *numberOfPivots; i++) {
         vector<double> deltas;
 
-        for (int j = 0; j < sampleSize; j++) {
+        for (int j = 0; j < *sampleSize; j++) {
 
             // Randomly selecting the next pairs
             int index1 = dist(gen);
@@ -35,7 +35,7 @@ vector<vector<double>> PivotIncrementalSelection::selectPivots(
             // TODO: Pass the value by reference
             // Vector 1 -> 0.1, 0,2..
             // vector 2 -> 0.05, 0,06..
-            double delta = vectorDistance(metrics[index2], metrics[index1]);
+            double delta = vectorDistance((*metrics)[index2], (*metrics)[index1]);
 
             deltas.push_back(delta);
         }
@@ -44,13 +44,13 @@ vector<vector<double>> PivotIncrementalSelection::selectPivots(
         double maxDelta = 0;
         int maxIndex;
 
-        for (int c = 0; c < sampleSize; c++) {
+        for (int c = 0; c < *sampleSize; c++) {
             index = dist(gen);
 
             double pivotDelta = 0;
 
             for (double delta : deltas) {
-                pivotDelta += abs(delta - vectorDistance(metrics[index], selectedPivots[i - 1]));
+                pivotDelta += abs(delta - vectorDistance((*metrics)[index], selectedPivots[i - 1]));
             }
 
             if (pivotDelta > maxDelta) {
@@ -59,7 +59,7 @@ vector<vector<double>> PivotIncrementalSelection::selectPivots(
             }
         }
 
-        selectedPivots[i] = metrics[maxIndex];
+        selectedPivots[i] = (*metrics)[maxIndex];
     }
 
     return selectedPivots;

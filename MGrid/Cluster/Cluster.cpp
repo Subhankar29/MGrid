@@ -23,7 +23,7 @@ vector<Cluster> Cluster::kMeansClustering(vector<vector<double>>* data, int k, i
   }
 
   int count = 0;
-  while (count < maxIterations){
+  while (count < 40){
     count++;
 
     // set datapoint to the nearest index:

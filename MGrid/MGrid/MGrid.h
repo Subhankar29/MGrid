@@ -50,8 +50,8 @@ class MGrid {
     virtual vector<vector<double>> getPivots();
     map<int, map<int, vector<int>>>
 
-    creatRings(vector<vector<double>> metricObject, vector<vector<double>>,
-               int numberOfPivots);
+    creatRings(vector<vector<double>> *metricObject, vector<vector<double>> *pivot,
+               int *numberOfPivots);
 
     static int visitCluster(vector<vector<double>> *data,
                             vector<double> *queryObject,

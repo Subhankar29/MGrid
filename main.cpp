@@ -24,7 +24,7 @@ int main() {
     vector<long> correctAns;
     vector<long> nnSearchTime;
 
-    vector<int> numberOfObjects = {100, 10000, 50000, 100000, 250000, 500000, 750000, 1000000};
+    vector<int> numberOfObjects = {50000, 100000, 250000, 500000, 750000, 1000000};
 
     for (int i = 0; i < numberOfObjects.size(); i++) {
       // Step 2: Determine the number of Pivots and number of rings
@@ -33,17 +33,17 @@ int main() {
       long numberOfPivots = 10;
       long numberOfRings = 10;
       long queryIndex =  numberOfObjects[i] - 1;
-      long numberOfClusters = 100;
+      long numberOfClusters = 10;
 
-      cout << " number of objects " <<  numberOfObjects[i] << endl;
-      cout << " Number of pivots : " << numberOfPivots << " number of Rings  " << numberOfRings << " number of Clusters " <<  numberOfClusters << endl;
-
-      // Generate the data set:
+//      cout << " number of objects " <<  numberOfObjects[i] << endl;
+//      cout << " Number of pivots : " << numberOfPivots << " number of Rings  " << numberOfRings << " number of Clusters " <<  numberOfClusters << endl;
+//
+//      // Generate the data set:
       DataSetGenerator dataSetGenerator(numberOfObjects[i], 64);
-
-      // Step 1: Get Data set
+//
+//      // Step 1: Get Data set
       vector<vector<double>> metricObjects = dataSetGenerator.generateDataNonUniformDistribution();
-//      vector<vector<double>> metricObjects = dataSetGenerator.generateDataUsingUniformDistribution();
+////      vector<vector<double>> metricObjects = dataSetGenerator.generateDataUsingUniformDistribution();
       MGrid mGrid(metricObjects, numberOfPivots, numberOfRings, queryIndex, numberOfClusters);
 
       vector<long> results = mGrid.buildAndSearch(queryIndex);
@@ -68,7 +68,7 @@ int main() {
       nnSearchTime.push_back(results[5]);
       cout << "------------------------------------------------------------------------" << endl;
 
-      cout << "Result from linear scan" << endl;
+      cout << "Result from linear scan for objects: " << numberOfObjects[i] << endl;
 
       auto linearScanStartTime = std::chrono::high_resolution_clock::now();
 

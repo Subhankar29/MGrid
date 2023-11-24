@@ -21,7 +21,7 @@ vector<long> MGrid::buildAndSearch(int queryIndex) {
     // Step 1: Select the Pivot using Incremental Selection algorithm
     int sample_size = 10;
     auto startPivots = std::chrono::high_resolution_clock::now();
-    pivots = PivotIncrementalSelection::selectPivots(metricObjects, numberOfPivots, numberOfRings, sample_size);
+    pivots = PivotIncrementalSelection::selectPivots(&metricObjects, &numberOfPivots, &numberOfRings, &sample_size);
     auto endPivots = std::chrono::high_resolution_clock::now();
 
     auto durationToSelectPivots = std::chrono::duration_cast<std::chrono::milliseconds>(endPivots - startPivots);
@@ -36,7 +36,7 @@ vector<long> MGrid::buildAndSearch(int queryIndex) {
 
     auto startRings = std::chrono::high_resolution_clock::now();
 
-    mapOfPivotIndexToMapOfRingsToDataIndexes = creatRings(metricObjects, pivots, numberOfRings);
+    mapOfPivotIndexToMapOfRingsToDataIndexes = creatRings(&metricObjects, &pivots, &numberOfRings);
 
     auto endRings = std::chrono::high_resolution_clock::now();
 
@@ -307,9 +307,9 @@ vector<vector<double>> MGrid::getPivots() {
 }
 
 map<int, map<int, vector<int>>> MGrid::creatRings(
-        vector<vector<double>> metrics,
-        vector<vector<double>> pivots,
-        int numberOfRings) {
+        vector<vector<double>> *metrics,
+        vector<vector<double>> *pivots,
+        int *numberOfRings) {
 
     // This creates a 3 dimension data object:
     // For each pivot, there is a vector of rings
@@ -317,7 +317,7 @@ map<int, map<int, vector<int>>> MGrid::creatRings(
     map<int, map<int, vector<int>>> mapOfPivotsToMapOfRingsIndexesToTheDataPoints;
 
     // For each pivot calculate the distance to each object
-    for (int i = 0; i < pivots.size(); i++) {
+    for (int i = 0; i < pivots->size(); i++) {
         int ringSegmentCount = 1;
         vector<pair<double, vector<double>>> distances;
 
@@ -327,8 +327,8 @@ map<int, map<int, vector<int>>> MGrid::creatRings(
         // List of distances from this pivot to the metrics
         vector<pair<int, double>> distancesOfIndexDataToPivots;
 
-        for (size_t m = 0; m < metrics.size(); m++) {
-            double distanceOfDataFromPivot = PivotIncrementalSelection::vectorDistance(metrics[m], pivots[i]);
+        for (size_t m = 0; m < metrics->size(); m++) {
+            double distanceOfDataFromPivot = PivotIncrementalSelection::vectorDistance(metrics->at(m), (*pivots)[i]);
             pair<int, double> distanceOfObjectToCurrentPivot(m, distanceOfDataFromPivot);
             distancesOfIndexDataToPivots.push_back(distanceOfObjectToCurrentPivot);
         }
@@ -341,8 +341,8 @@ map<int, map<int, vector<int>>> MGrid::creatRings(
 
         // Identify the number of points in each rings:
         //  if there are 10 rings and 100 points then each rings will have 10 points.
-        int totalNumberOfPointsInOneSegment = metrics.size() / numberOfRings;
-        bool isOdd = metrics.size() % 2 != 0;
+        int totalNumberOfPointsInOneSegment = metrics->size() / *numberOfRings;
+        bool isOdd = metrics->size() % 2 != 0;
         map<int, vector<int>> mapOfRingIndexToDataPoints;
         vector<int> listOfDataPointsInARingSegment;
 
@@ -351,11 +351,11 @@ map<int, map<int, vector<int>>> MGrid::creatRings(
             listOfDataPointsInARingSegment.push_back(indexOfDataPoint);
 
             if (isOdd) {
-                if (ringSegmentCount != numberOfRings && listOfDataPointsInARingSegment.size() == totalNumberOfPointsInOneSegment) {
+                if (ringSegmentCount != *numberOfRings && listOfDataPointsInARingSegment.size() == totalNumberOfPointsInOneSegment) {
                     mapOfRingIndexToDataPoints[ringSegmentCount] = listOfDataPointsInARingSegment;
                     listOfDataPointsInARingSegment.clear();
                     ringSegmentCount++;
-                } else if (ringSegmentCount == numberOfRings &&
+                } else if (ringSegmentCount == *numberOfRings &&
                            listOfDataPointsInARingSegment.size() == totalNumberOfPointsInOneSegment + 1) {
                     mapOfRingIndexToDataPoints[ringSegmentCount] = listOfDataPointsInARingSegment;
                     listOfDataPointsInARingSegment.clear();
