@@ -10,7 +10,7 @@ using namespace std::chrono;
 int main() {
 
     // Generate the data set:
-    DataSetGenerator dataSetGenerator(10000, 64);
+    DataSetGenerator dataSetGenerator(1000, 64);
 
     // Step 1: Get Data set
     vector<vector<double>> metricObjects = dataSetGenerator.generateDataNonUniformDistribution();
