@@ -4,6 +4,7 @@
 #include <map>
 #include <utility>
 #include <chrono>
+#include<algorithm>
 
 using namespace std;
 
@@ -306,8 +307,8 @@ map<int, map<int, vector<int>>> MGrid::creatRings(
             distancesOfIndexDataToPivots.push_back(distanceOfObjectToCurrentPivot);
         }
 
-        std::sort(distancesOfIndexDataToPivots.begin(), distancesOfIndexDataToPivots.end(),
-                  [](const auto &a, const auto &b) {
+        sort(distancesOfIndexDataToPivots.begin(), distancesOfIndexDataToPivots.end(),
+                  [](const pair<int, double> &a, const pair<int, double> &b) {
                       return a.second < b.second;
                   }
         );
