@@ -245,6 +245,9 @@ int MGrid::nnSearchAlgorithm(
 
     i++;
 
+    auto averageTimeStart = std::chrono::high_resolution_clock::now();
+
+
     // Prune the remaining cluster in a while loop.
 
     while (i < activeClusters.size()) {
