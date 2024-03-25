@@ -51,7 +51,8 @@ class MGrid {
                                       *mapOfPivotToListOfMinMaxDistancesToRings,
                                   vector<double> queryObject,
                                   vector<vector<double>> data,
-                                  vector<Cluster> clusters);
+                                  vector<Cluster> clusters,
+                                  double actualDistance);
 
     static void pruneClusters(
         vector<double> queryObject,

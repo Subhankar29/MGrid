@@ -5,10 +5,20 @@
 #include "GenerateData/DataSetGenerator.h"
 #include <chrono>
 
+void runTest();
+
 using namespace std::chrono;
 
 int main() {
 
+    for (int i = 0; i < 10; i++) {
+        runTest();
+    }
+
+    return 0;
+}
+
+void runTest() {
     // Generate the data set:
     DataSetGenerator dataSetGenerator(10000, 64);
 
@@ -20,7 +30,7 @@ int main() {
     // to-do
     long numberOfPivots = 4;
     long numberOfRings = 5;
-    long queryIndex = 100;
+    long queryIndex = 50;
     long numberOfClusters = 20;
 
     auto start = std::chrono::high_resolution_clock::now();
@@ -44,6 +54,4 @@ int main() {
     // Step 5: Insert Objects to the MGrid:
     MetricObject objectToBeInserted;
     mGridQuery->insert(objectToBeInserted);
-
-    return 0;
 }
