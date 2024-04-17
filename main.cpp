@@ -20,7 +20,7 @@ int main() {
 
 void runTest() {
     // Generate the data set:
-    DataSetGenerator dataSetGenerator(10000, 64);
+    DataSetGenerator dataSetGenerator(10000, 100);
 
     // Step 1: Get Data set
     vector<vector<double>> metricObjects = dataSetGenerator.generateDataNonUniformDistribution();

@@ -54,6 +54,14 @@ class MGrid {
                                   vector<Cluster> clusters,
                                   double actualDistance);
 
+    static int nnSearchAlgorithmPrime(
+            vector<vector<double>> pivots,
+            map<int, map<int, pair<double, double>>> *mapOfPivotToListOfMinMaxDistancesToRings,
+            vector<double> queryObject,
+            vector<vector<double>> data,
+            vector<Cluster> clusters,
+            int prime);
+
     static void pruneClusters(
         vector<double> queryObject,
         double radius,

@@ -6,6 +6,7 @@
 #include <chrono>
 #include <cmath>
 #include <random>
+#include "../../GenerateData/DataSetGenerator.h"
 
 using namespace std;
 
@@ -65,22 +66,41 @@ MGrid::MGrid(const vector<vector<double>> &metricObjects, const int numberOfPivo
 
     auto nnSearchStart = std::chrono::high_resolution_clock::now();
 
-    const vector<double>& queryObject1 = metricObjects[queryIndex];
+    // Accuracy testing:
+    // 1. Get a random query index from the dataset
+
+    DataSetGenerator dataSetGenerator(10000, 100);
+
+    // Step 1: Get Data set
+    vector<vector<double>> randomData = dataSetGenerator.generateDataNonUniformDistribution();
+
+    srand(std::time(nullptr));
+
+    // Generate a random index within the range of the list
+    int randomIndex = rand() % randomData.size();
+
+    cout << "Random query object " << randomIndex << endl;
+
+    const vector<double>& queryObject1 = randomData[randomIndex];
+
+    double noiseLevel = 0.1;
 
     std::vector<double> nearVector;
     std::random_device rd;
     std::mt19937 gen(rd());
-    std::uniform_real_distribution<> dis(-0.5, 0.5);
+    std::uniform_real_distribution<> dis(noiseLevel * -1, noiseLevel);
 
     for (double value : queryObject1) {
         double noise = dis(gen);
         nearVector.push_back(std::round(value + noise));
     }
 
-    // what is the distance of the nearVector and the actual
-    double actualDistance = PivotIncrementalSelection::vectorDistance(metricObjects[queryIndex], nearVector);
+    cout << "Noise : " << noiseLevel << endl;
 
-    cout << "Distance from the query object to actual answer : " << actualDistance << endl;
+    // what is the distance of the nearVector and the actual
+    double actualDistance = PivotIncrementalSelection::vectorDistance(metricObjects[randomIndex], nearVector);
+//
+//    cout << "Distance from the query object to actual answer : " << actualDistance << endl;
 
     // Objects are clustered based on their distances to pivots so objects occurring in the same rings
     // will be places in the same clusters.
@@ -93,7 +113,18 @@ MGrid::MGrid(const vector<vector<double>> &metricObjects, const int numberOfPivo
                 actualDistance
             );
 
-    cout << "result " << nnResult << endl;
+    cout << "result P1 : " << nnResult << endl;
+
+    int nnP2 = nnSearchAlgorithmPrime(
+                pivots,
+                &mapOfPivotToListOfMinMaxDistancesToRings,
+                nearVector,
+                metricObjects,
+                clusters,
+                nnResult
+            );
+
+    cout << "result P2 : " << nnP2 << endl;
 
     auto nnSearchEnd = std::chrono::high_resolution_clock::now();
 
@@ -222,6 +253,81 @@ bool compareDist(const pair<Cluster, double> &p1, const pair<Cluster, double> &p
     return p1.second < p2.second;
 }
 
+int MGrid::nnSearchAlgorithmPrime(
+        vector<vector<double>> pivots,
+        map<int, map<int, pair<double, double>>> *mapOfPivotToListOfMinMaxDistancesToRings,
+        vector<double> queryObject,
+        vector<vector<double>> data,
+        vector<Cluster> clusters,
+        int prime) {
+
+    typedef pair<Cluster, double> clusterPair;
+    vector<clusterPair> clusterDistanceArray;
+
+    vector<Cluster> activeClusters;
+
+    double nearestNeighbourDistance = numeric_limits<double>::max();
+    double currentNearestNeighbourDistance = numeric_limits<double>::max();
+
+    for (auto &cluster: clusters) {
+        double distance = PivotIncrementalSelection::vectorDistance(cluster.mean, queryObject);
+        clusterPair cp(cluster, distance);
+        clusterDistanceArray.push_back(cp);
+    }
+
+    sort(clusterDistanceArray.begin(), clusterDistanceArray.end(), compareDist);
+
+    activeClusters.reserve(clusterDistanceArray.size());
+    // TODO: There are few of the clusters for which the cluster mean is not yet defined properly
+    // hence we need to finish that.
+    for (auto &cPair: clusterDistanceArray) {
+        if (cPair.second > 0) {
+            activeClusters.push_back(cPair.first);
+        }
+    }
+
+    int i = 0;
+
+    int nearestNeighbourAns = -1;
+    int nearestNeighbourIndex = -1;
+
+    nearestNeighbourAns = visitCluster(data, queryObject, activeClusters[i], &currentNearestNeighbourDistance);
+    nearestNeighbourDistance = currentNearestNeighbourDistance;
+
+    cout << "Nearest neighbor distance : " << nearestNeighbourDistance << endl;
+
+    pruneClusters(queryObject, nearestNeighbourDistance, &activeClusters, *mapOfPivotToListOfMinMaxDistancesToRings,
+                  pivots);
+
+    i++;
+
+    // Prune the remaining cluster in a while loop.
+    while (i < activeClusters.size()) {
+
+        if (!activeClusters[i].isPruned) {
+            nearestNeighbourIndex = visitCluster(data, queryObject, activeClusters[i],
+                                                 &currentNearestNeighbourDistance);
+
+            if (currentNearestNeighbourDistance < nearestNeighbourDistance) {
+                nearestNeighbourDistance = currentNearestNeighbourDistance;
+                pruneClusters(queryObject, nearestNeighbourDistance, &activeClusters,
+                              *mapOfPivotToListOfMinMaxDistancesToRings, pivots);
+                nearestNeighbourAns = nearestNeighbourIndex;
+            }
+
+            cout << "P2 : " << nearestNeighbourAns << endl;
+
+            double distanceBetweenQPrimeAndQ = PivotIncrementalSelection::vectorDistance(data[nearestNeighbourAns], data[prime]);
+
+            cout << "Distance between P2 and P1 : " << distanceBetweenQPrimeAndQ << endl;
+        }
+
+        i++;
+    }
+
+    return nearestNeighbourAns;
+}
+
 int MGrid::nnSearchAlgorithm(
         vector<vector<double>> pivots,
         map<int, map<int, pair<double, double>>> *mapOfPivotToListOfMinMaxDistancesToRings,
@@ -263,7 +369,7 @@ int MGrid::nnSearchAlgorithm(
     nearestNeighbourAns = visitCluster(data, queryObject, activeClusters[i], &currentNearestNeighbourDistance);
     nearestNeighbourDistance = currentNearestNeighbourDistance;
 
-    cout << "Nearest neighbor distance" << nearestNeighbourDistance << endl;
+    cout << "Nearest neighbor distance : " << nearestNeighbourDistance << endl;
 
     pruneClusters(queryObject, nearestNeighbourDistance, &activeClusters, *mapOfPivotToListOfMinMaxDistancesToRings,
                   pivots);
@@ -283,13 +389,41 @@ int MGrid::nnSearchAlgorithm(
                               *mapOfPivotToListOfMinMaxDistancesToRings, pivots);
                 nearestNeighbourAns = nearestNeighbourIndex;
             }
+
+            cout << "P1 candidate : " << nearestNeighbourAns << endl;
+
+            cout << "Nearest neighbor distance after iteration i "<< i  << " " << nearestNeighbourDistance << endl;
+
+            //double accuracy =  ((abs(actualDistance - nearestNeighbourDistance) / actualDistance)) * 100;
+
+            double accuracy =  (((actualDistance - nearestNeighbourDistance) / actualDistance)) * 100;
+
+            if (accuracy < 0.0) {
+                cout << "Accuracy " << 1 + abs(accuracy) << "%" << endl;
+            } else {
+                cout << "Accuracy " << 1 - accuracy << "%" << endl;
+            }
+
+            cout << "Accuracy " << accuracy << "%" << endl;
         }
+        // (10 - 4) / 4  * 100
+       // 6/4 * 100
+       // (10 - 14)
+       // (actual - nearest)/actual = x;
 
-        cout << "Nearest neighbor distance after iteration i "<< i  << " " << nearestNeighbourDistance << endl;
+       // 1.
+       // abs(10 - 14) / 10
+       // 0.4
+       // (10 - 14) / 10
+       // -0.4 : above what we are expecting to be
+       //2.
+       // (10 - 6)/10
+       // 0.4 : closer what we are expecting to be
+       //
 
-        double accuracy =  (1 - (abs(actualDistance - nearestNeighbourDistance) / nearestNeighbourDistance)) * 100;
-
-        cout << "Accuracy " << accuracy << "%" << endl;
+        // 1. Generate a random : query point -> 1. Randomly from the pointer in the dataset 2. Generate all new data point
+        // 2. Do the exact search and find the true nearest neighbor
+        // 3. Now, this is the point we are actually looking for. This is the True Nearest neighbor
 
         i++;
     }
