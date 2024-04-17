@@ -10,7 +10,7 @@ using namespace std::chrono;
 int main() {
 
     // Generate the data set:
-    DataSetGenerator dataSetGenerator(10000, 100);
+    DataSetGenerator dataSetGenerator(100000, 100);
 
     // Step 1: Get Data set
     vector<vector<double>> metricObjects = dataSetGenerator.generateDataNonUniformDistribution();
@@ -20,7 +20,7 @@ int main() {
     // to-do
     long numberOfPivots = 5;
     long numberOfRings = 5;
-    long queryIndex = 100;
+    long queryIndex = 1000;
     long numberOfClusters = 30;
 
     // auto end_linear = std::chrono::high_resolution_clock::now();

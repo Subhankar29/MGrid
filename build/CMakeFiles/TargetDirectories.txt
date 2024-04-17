@@ -1,0 +1,3 @@
+/home/shah.sub/git/MGrid/build/CMakeFiles/MGrid.dir
+/home/shah.sub/git/MGrid/build/CMakeFiles/edit_cache.dir
+/home/shah.sub/git/MGrid/build/CMakeFiles/rebuild_cache.dir

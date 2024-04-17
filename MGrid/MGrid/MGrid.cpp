@@ -263,6 +263,11 @@ int MGrid::nnSearchAlgorithm(
             }
         }
 
+	cout << "nearest neighbor index " << nearestNeighbourIndex << endl;
+
+	double distance = PivotIncrementalSelection::vectorDistance(data[nearestNeighbourIndex], data[100]);
+	cout << "Distance from nearestNeigh : " << distance << endl; 
+
         i++;
     }
 
