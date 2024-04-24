@@ -6,11 +6,24 @@
 #include <chrono>
 
 using namespace std::chrono;
+void run(int dim);
 
 int main() {
 
+    auto dimensions = {256, 512, 1024, 4096, 16384, 65536};
+
+    for (auto dim : dimensions) {
+        run(dim);
+    }
+
+    return 0;
+}
+
+void run(int dimension) {
     // Generate the data set:
-    DataSetGenerator dataSetGenerator(100000, 100);
+    cout << "------------------- START ----------------" << endl;
+    cout << "Dimension: " <<  dimension << endl;
+    DataSetGenerator dataSetGenerator(250000, dimension);
 
     // Step 1: Get Data set
     vector<vector<double>> metricObjects = dataSetGenerator.generateDataNonUniformDistribution();
@@ -51,5 +64,5 @@ int main() {
     MetricObject objectToBeInserted;
     mGridQuery->insert(objectToBeInserted);
 
-    return 0;
+    cout << "------------------END FILE ---------------------------" << endl;
 }
