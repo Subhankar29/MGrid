@@ -26,9 +26,9 @@ vector<vector<double>> DataSetGenerator::generateDataNonUniformDistribution() co
     vector<vector<double>> data(numberOfRows, vector<double>(numberOfCols));
 
     // Parameters for Gaussian mixture model
-    std::vector<double> means = {-2};
-    std::vector<double> stdevs = {1};
-    std::vector<double> weights = {0.05};
+    std::vector<double> means = { -2, 2, 6, 10, 14 };
+    std::vector<double> stdevs = {1, 0.5, 1.5, 2, 2.5};
+    std::vector<double> weights = {0.05, 0.05, 0.05, 0.05, 0.05};
 
     std::default_random_engine generator;
     std::normal_distribution<double> distribution(0.3,0.2);
