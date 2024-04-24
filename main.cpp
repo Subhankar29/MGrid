@@ -6,24 +6,26 @@
 #include <chrono>
 
 using namespace std::chrono;
-void run(int dim);
+void run(int dim, int clusterSize);
 
 int main() {
 
-    auto dimensions = {256, 512, 1024, 4096, 16384, 65536};
+    auto dimensions = { 1024 };
+    auto number_of_clusters = {1, 3, 5, 10, 15, 20};
 
-    for (auto dim : dimensions) {
-        run(dim);
+    for (auto cluster_size : number_of_clusters) {
+        run(1024, cluster_size);
     }
 
     return 0;
 }
 
-void run(int dimension) {
+void run(int dimension,
+         int clusterSize) {
     // Generate the data set:
     cout << "------------------- START ----------------" << endl;
-    cout << "Dimension: " <<  dimension << endl;
-    DataSetGenerator dataSetGenerator(250000, dimension);
+    cout << "Cluster size : " <<  clusterSize << endl;
+    DataSetGenerator dataSetGenerator(100000, dimension);
 
     // Step 1: Get Data set
     vector<vector<double>> metricObjects = dataSetGenerator.generateDataNonUniformDistribution();
@@ -34,7 +36,7 @@ void run(int dimension) {
     long numberOfPivots = 5;
     long numberOfRings = 5;
     long queryIndex = 1000;
-    long numberOfClusters = 10;
+    long numberOfClusters = clusterSize;
 
     // auto end_linear = std::chrono::high_resolution_clock::now();
 
