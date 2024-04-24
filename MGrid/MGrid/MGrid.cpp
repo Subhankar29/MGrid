@@ -5,6 +5,8 @@
 #include <utility>
 #include <chrono>
 #include <algorithm>
+#include <random>
+#include <cstdlib>
 
 using namespace std;
 
@@ -64,14 +66,30 @@ MGrid::MGrid(const vector<vector<double>> &metricObjects, const int numberOfPivo
 
     auto nnSearchStart = std::chrono::high_resolution_clock::now();
 
+    // Seed the random number generator
+    std::random_device rd;
+    std::mt19937 gen(rd());
+
+    // Define the range of noise
+    std::uniform_real_distribution<double> dis(0.4, 0.4); // Range [-0.1, 0.1]
+
+    auto queryObject = metricObjects[queryIndex];
+
+    // Add noise to each data point
+    for (double& point : queryObject) {
+        double noise = dis(gen);
+        point += noise;
+    }
+
     // Objects are clustered based on their distances to pivots so objects occurring in the same rings
     // will be places in the same clusters.
     int nnResult = nnSearchAlgorithm(
                 pivots,
                 &mapOfPivotToListOfMinMaxDistancesToRings,
-                metricObjects[queryIndex],
+                queryObject,
                 metricObjects,
-                clusters
+                clusters,
+                queryIndex
             );
 
     cout << "result " << nnResult << endl;
@@ -208,7 +226,8 @@ int MGrid::nnSearchAlgorithm(
         map<int, map<int, pair<double, double>>> *mapOfPivotToListOfMinMaxDistancesToRings,
         vector<double> queryObject,
         vector<vector<double>> data,
-        vector<Cluster> clusters) {
+        vector<Cluster> clusters,
+        int queryIndex) {
 
     typedef pair<Cluster, double> clusterPair;
     vector<clusterPair> clusterDistanceArray;
@@ -266,9 +285,10 @@ int MGrid::nnSearchAlgorithm(
 
 	cout << "nearest neighbor index " << nearestNeighbourIndex << endl;
 
-	double distance = PivotIncrementalSelection::vectorDistance(data[nearestNeighbourIndex], data[1000]);
+	double distance = PivotIncrementalSelection::vectorDistance(data[nearestNeighbourIndex], data[queryIndex]);
 	cout << "Distance from nearestNeigh : " << distance << endl; 
-	if (distance == 0.0 && !isFirstFound) {
+
+    if (distance == 0.0 && !isFirstFound) {
 		auto endTime = std::chrono::high_resolution_clock::now();
 		auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(endTime - averageTimeStart);
 		cout << "First correct value " << duration.count() << "ms" << endl;
