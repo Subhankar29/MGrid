@@ -246,6 +246,7 @@ int MGrid::nnSearchAlgorithm(
     i++;
 
     auto averageTimeStart = std::chrono::high_resolution_clock::now();
+    auto isFirstFound = false;
 
 
     // Prune the remaining cluster in a while loop.
@@ -265,8 +266,15 @@ int MGrid::nnSearchAlgorithm(
 
 	cout << "nearest neighbor index " << nearestNeighbourIndex << endl;
 
-	double distance = PivotIncrementalSelection::vectorDistance(data[nearestNeighbourIndex], data[100]);
+	double distance = PivotIncrementalSelection::vectorDistance(data[nearestNeighbourIndex], data[1000]);
 	cout << "Distance from nearestNeigh : " << distance << endl; 
+	if (distance == 0.0 && !isFirstFound) {
+		auto endTime = std::chrono::high_resolution_clock::now();
+		auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(endTime - averageTimeStart);
+		cout << "First correct value " << duration.count() << "ms" << endl;
+		isFirstFound = true;
+
+	}
 
         i++;
     }

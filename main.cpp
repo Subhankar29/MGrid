@@ -21,7 +21,7 @@ int main() {
     long numberOfPivots = 5;
     long numberOfRings = 5;
     long queryIndex = 1000;
-    long numberOfClusters = 30;
+    long numberOfClusters = 10;
 
     // auto end_linear = std::chrono::high_resolution_clock::now();
 
