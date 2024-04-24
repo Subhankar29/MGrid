@@ -11,7 +11,7 @@ void run(int dim, int clusterSize);
 int main() {
 
     auto dimensions = { 1024 };
-    auto number_of_clusters = {1, 3, 5, 10, 15, 20};
+    auto number_of_clusters = { 10 };
 
     for (auto cluster_size : number_of_clusters) {
         run(1024, cluster_size);
