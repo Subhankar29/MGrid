@@ -11,20 +11,20 @@ void run(int dim, int clusterSize);
 int main() {
 
     auto dimensions = { 1024 };
-    auto number_of_clusters = { 10 };
+    auto number_of_rings = { 2, 4, 7, 10, 13 };
 
-    for (auto cluster_size : number_of_clusters) {
-        run(1024, cluster_size);
+    for (auto cluster_size : number_of_rings) {
+        run(4096, cluster_size);
     }
 
     return 0;
 }
 
 void run(int dimension,
-         int clusterSize) {
+         int rings) {
     // Generate the data set:
     cout << "------------------- START ----------------" << endl;
-    cout << "Cluster size : " <<  clusterSize << endl;
+    cout << "ring count : " <<  rings << endl;
     DataSetGenerator dataSetGenerator(100000, dimension);
 
     // Step 1: Get Data set
@@ -34,9 +34,9 @@ void run(int dimension,
     // Question: How we will determine it? What parameters should we consider?
     // to-do
     long numberOfPivots = 5;
-    long numberOfRings = 5;
+    long numberOfRings = rings;
     long queryIndex = 1000;
-    long numberOfClusters = clusterSize;
+    long numberOfClusters = 10;
 
     // auto end_linear = std::chrono::high_resolution_clock::now();
 
