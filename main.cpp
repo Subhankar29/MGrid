@@ -21,10 +21,10 @@ int main() {
 }
 
 void run(int dimension,
-         int rings) {
+         int pivot) {
     // Generate the data set:
     cout << "------------------- START ----------------" << endl;
-    cout << "ring count : " <<  rings << endl;
+    cout << "pivot count : " <<  pivot << endl;
     DataSetGenerator dataSetGenerator(100000, dimension);
 
     // Step 1: Get Data set
@@ -33,8 +33,8 @@ void run(int dimension,
     // Step 2: Determine the number of Pivots and number of rings
     // Question: How we will determine it? What parameters should we consider?
     // to-do
-    long numberOfPivots = 5;
-    long numberOfRings = rings;
+    long numberOfPivots = pivot;
+    long numberOfRings = 5;
     long queryIndex = 1000;
     long numberOfClusters = 10;
 
