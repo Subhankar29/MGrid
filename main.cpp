@@ -13,9 +13,7 @@ int main() {
     auto dimensions = { 1024 };
     auto number_of_rings = { 2, 4, 7, 10, 13 };
 
-    for (auto cluster_size : number_of_rings) {
-        run(4096, cluster_size);
-    }
+    run(4096, 4);
 
     return 0;
 }
@@ -33,7 +31,7 @@ void run(int dimension,
     // Step 2: Determine the number of Pivots and number of rings
     // Question: How we will determine it? What parameters should we consider?
     // to-do
-    long numberOfPivots = pivot;
+    long numberOfPivots = 5;
     long numberOfRings = 5;
     long queryIndex = 1000;
     long numberOfClusters = 10;

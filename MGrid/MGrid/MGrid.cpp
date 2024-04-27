@@ -71,7 +71,7 @@ MGrid::MGrid(const vector<vector<double>> &metricObjects, const int numberOfPivo
     std::mt19937 gen(rd());
 
     // Define the range of noise
-    std::uniform_real_distribution<double> dis(-0.9, 0.9); // Range [-0.1, 0.1]
+    std::uniform_real_distribution<double> dis(-0.01, 0.01); // Range [-0.1, 0.1]
 
     auto queryObject = metricObjects[queryIndex];
 
