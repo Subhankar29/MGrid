@@ -21,8 +21,6 @@ MGrid::MGrid(const vector<vector<double>> &metricObjects, const int numberOfPivo
 
     cout << "Time taken to select the pivots: " << durationToSelectPivots.count() << " ms" << endl;
 
-    //double queryDistance = PivotIncrementalSelection::vectorDistance(pivots[0], metricObjects[5]);
-
     // Step 2: Then select rings such that there are equal number of object in each rings for each pivot.
     //  mapOfPivotsToIndexRings = createRings(metricObjects, pivots, numberOfRings);
 
@@ -82,6 +80,12 @@ MGrid::MGrid(const vector<vector<double>> &metricObjects, const int numberOfPivo
     cout << "Time taken for NN search: " << durationForNNSearch.count() << " ms" << endl;
 }
 
+/**
+ * Get the information about the cluster
+ * @param data the dataset on which clusters are formed
+ * @param clusters the data set segregated in different cluster
+ * @param mapOfPivotToListOfMinMaxDistancesToRings stored the meta data of the cluster
+ */
 void MGrid::getMetaDataCluster(
         vector<vector<double>> data,
         vector<Cluster> *clusters,
@@ -142,6 +146,14 @@ void MGrid::getMetaDataCluster(
     }
 }
 
+/**
+ * Removed the clusters which are not part of the result
+ * @param queryObject the input query
+ * @param radius pruning radius
+ * @param activeClusters metadata of the active cluster
+ * @param mapOfPivotToListOfMinMaxDistancesToRings metadata of all clusters
+ * @param pivots different pre-selected pivots
+ */
 void MGrid::pruneClusters(
         vector<double> queryObject,
         double radius,
@@ -176,10 +188,6 @@ void MGrid::pruneClusters(
             if (ringStartDistanceFromPivot <= querySpaceEndPoint) {
                 querySpaceRingEndIndex = ringId;
             }
-
-//      if (querySpaceRingStartIndex != -1 && querySpaceRingEndIndex != -1) {
-//        break;
-//      }
         }
 
         for (int i = 0; i < activeClusters->size(); i++) {
@@ -202,6 +210,15 @@ bool compareDist(const pair<Cluster, double> &p1, const pair<Cluster, double> &p
     return p1.second < p2.second;
 }
 
+/**
+ * Search for the object given the query point
+ * @param pivots set of pre-selected pivots
+ * @param mapOfPivotToListOfMinMaxDistancesToRings  Metadata of the clusters
+ * @param queryObject query point which is the starting point of the search
+ * @param data represents the dataset
+ * @param clusters contains the metadata of the cluster
+ * @return nearest neighbor candidate
+ */
 int MGrid::nnSearchAlgorithm(
         vector<vector<double>> pivots,
         map<int, map<int, pair<double, double>>> *mapOfPivotToListOfMinMaxDistancesToRings,
@@ -226,8 +243,6 @@ int MGrid::nnSearchAlgorithm(
     sort(clusterDistanceArray.begin(), clusterDistanceArray.end(), compareDist);
 
     activeClusters.reserve(clusterDistanceArray.size());
-    // TODO: There are few of the clusters for which the cluster mean is not yet defined properly
-    // hence we need to finish that.
     for (auto &cPair: clusterDistanceArray) {
         if (cPair.second > 0) {
             activeClusters.push_back(cPair.first);
@@ -266,18 +281,28 @@ int MGrid::nnSearchAlgorithm(
 
 }
 
-map<int, vector<Ring>> MGrid::getRingsForPivot() {
-    return mapOfPivotsToIndexRings;
-}
-
+/**
+ * Getter to fetch the cluster
+ * @return
+ */
 vector<Cluster> MGrid::getCluster() {
     return clusters;
 }
-
+/**
+ * Getter to fetch the pivots
+ * @return
+ */
 vector<vector<double>> MGrid::getPivots() {
     return pivots;
 }
 
+/**
+ * Creates rings on the data
+ * @param metrics presents the dataset
+ * @param pivots predefined pivot points
+ * @param numberOfRings predefined rings
+ * @return metadata of the formed rings
+ */
 map<int, map<int, vector<int>>> MGrid::creatRings(
         vector<vector<double>> metrics,
         vector<vector<double>> pivots,
@@ -408,49 +433,3 @@ int MGrid::visitCluster(
 
     return nearestNeighborObject;
 }
-
-
-/*
-map<int, vector<Ring>> MGrid::createRings(
-        vector<vector<double>> metrics,
-        vector<vector<double>> pivots,
-        int numberOfRings) {
-
-map<int, vector<Ring>> ringMap;
-
-for (int i = 0; i < pivots.size(); i++) {
-
-  // Get distances to pivot
-  std::vector<double> distances;
-  for (auto& point : metrics) {
-    double distance = PivotIncrementalSelection::vectorDistance(point, pivots[i]);
-    distances.push_back(distance);
-  }
-
-  // Determine min and max dist
-  double minDist = *std::min_element(distances.begin(), distances.end());
-  double maxDist = *std::max_element(distances.begin(), distances.end());
-
-  // Compute interval size
-  double interval = (maxDist - minDist) / numberOfRings;
-
-  // Generate ring distances
-  vector<Ring> ringDist;
-  ringDist.reserve(numberOfRings);
-  Ring prev{minDist , minDist};
-
-  for (int r = 0; r < numberOfRings; r++) {
-    Ring ring{};
-    ring.minDist = prev.maxDist;
-    ring.maxDist = ring.minDist + interval;
-
-    ringDist.push_back(ring);
-    prev = ring;
-  }
-
-  ringMap[i] = ringDist;
-}
-
-return ringMap;
-}
-*/

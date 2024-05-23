@@ -2,9 +2,13 @@
 #include "DataSetGenerator.h"
 
 using namespace std;
-
+// Class to Generate the data set based on number of rows and number of cols
 DataSetGenerator::DataSetGenerator(int numberOfRows, int numberOfCols) : numberOfRows(numberOfRows), numberOfCols(numberOfCols) {}
 
+/**
+ * Generates Uniform distributed dataset
+ * @return the embedding of the dataset
+ */
 vector<vector<double>> DataSetGenerator::generateDataUsingUniformDistribution() const {
     vector<vector<double>> data(numberOfRows);
 
@@ -22,6 +26,10 @@ vector<vector<double>> DataSetGenerator::generateDataUsingUniformDistribution() 
     return data;
 }
 
+/**
+ * Creates a non-uniform distribution of the dataset based
+ * @return generated dataset
+ */
 vector<vector<double>> DataSetGenerator::generateDataNonUniformDistribution() const  {
     vector<vector<double>> data(numberOfRows, vector<double>(numberOfCols));
 

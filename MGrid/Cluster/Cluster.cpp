@@ -3,6 +3,13 @@
 #include <cfloat>
 #include "../Pivot/PivotIncrementalSelection.h"
 
+/**
+ * Segregate the data in clusters based on the K-Nearest Neighbor Algorithm
+ * @param data on which clusters are formed
+ * @param k number of clusters to be formed
+ * @param maxIterations the algorithm will be run
+ * @return metadata of the clusters form
+ */
 vector<Cluster> Cluster::clusterData(vector<vector<double>> data, int k, int maxIterations) {
     vector<vector<double>> centroids = getCentroids(data, k, maxIterations);
     vector<Cluster> clusters(centroids.size());
@@ -25,6 +32,13 @@ vector<Cluster> Cluster::clusterData(vector<vector<double>> data, int k, int max
     return clusters;
 }
 
+/**
+ * Created K centroid based on KNN algorithm
+ * @param data on which clusters are formed
+ * @param k number of clusters to be formed
+ * @param maxIterations the algorithm will be run
+ * @return list of centroids points
+ */
 vector<vector<double>> Cluster::getCentroids(vector<vector<double>> data, int k, int maxIterations) {
 
   vector<vector<double>> centroids;

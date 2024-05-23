@@ -4,6 +4,14 @@
 
 using namespace std;
 
+/**
+ * Create Pivot on the dataset based on incremental Pivot Selection Algorithm
+ * @param metrics represents the dataset
+ * @param numberOfPivots to be created
+ * @param numberOfRings to be formed
+ * @param sampleSize represents the smaller portion fo the dataset
+ * @return a list of pivots
+ */
 vector<vector<double>> PivotIncrementalSelection::selectPivots(
         const vector<vector<double>>& metrics,
         int numberOfPivots,
@@ -32,9 +40,6 @@ vector<vector<double>> PivotIncrementalSelection::selectPivots(
             int index2 = dist(gen);
 
             // Get the distance between the 2 indexes
-            // TODO: Pass the value by reference
-            // Vector 1 -> 0.1, 0,2..
-            // vector 2 -> 0.05, 0,06..
             double delta = vectorDistance(metrics[index2], metrics[index1]);
 
             deltas.push_back(delta);
@@ -67,8 +72,9 @@ vector<vector<double>> PivotIncrementalSelection::selectPivots(
 
 /**
  * Function to get the Euclidean distance between the 2 points
- * @param v1
- * @return
+ * @param v1 point 1
+ * @param v2 point 2
+ * @return euclidian distance between 2 points
  */
 double PivotIncrementalSelection::vectorDistance(vector<double> v1, vector<double> v2) {
     if (v1.size() != v2.size()) {

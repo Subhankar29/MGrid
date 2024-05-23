@@ -16,8 +16,6 @@ int main() {
     vector<vector<double>> metricObjects = dataSetGenerator.generateDataNonUniformDistribution();
 
     // Step 2: Determine the number of Pivots and number of rings
-    // Question: How we will determine it? What parameters should we consider?
-    // to-do
     long numberOfPivots = 4;
     long numberOfRings = 5;
     long queryIndex = 100;

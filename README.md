@@ -6,6 +6,12 @@ This repository contains an implementation of the M-Grid indexing structure. The
 
 The M-Grid constructs a pseudo-grid structure in metric spaces using a set of pivot objects. The data points are approximated by their distances to these pivots, effectively mapping them onto a low-dimensional space. This allows clustering the data points based on their positions on the pseudo-grid. During similarity search, the M-Grid prunes clusters that cannot contribute to the query answer using the triangular inequality property, thus reducing the number of distance computations and disk accesses required.
 
+## Images
+
+![Clusters Formation](images/image1.png)(Cluster formation)
+![Clusters Pruning](images/image2.png)(Pruning of cluster)
+![Triangular inequality theorem](images/image3.png)(Triangular inequality theorem)
+
 ## Features
 
 - Supports efficient nearest neighbor search in high-dimensional vector spaces and general metric spaces.
