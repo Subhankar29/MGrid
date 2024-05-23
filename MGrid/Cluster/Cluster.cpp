@@ -33,7 +33,7 @@ vector<Cluster> Cluster::clusterData(vector<vector<double>> data, int k, int max
 }
 
 /**
- * Created K centroid based on KNN algorithm
+ * Creates K centroid based on KNN algorithm
  * @param data on which clusters are formed
  * @param k number of clusters to be formed
  * @param maxIterations the algorithm will be run
