@@ -1,16 +1,18 @@
 #include <iostream>
+#include <vector>
 #include "MGrid/MGrid/MGrid.h"
 #include "Query/Query.h"
 #include "Query/MGridQuery.h"
 #include "GenerateData/DataSetGenerator.h"
 #include <chrono>
 
+using namespace std;
 using namespace std::chrono;
 
 int main() {
 
     // Generate the data set:
-    DataSetGenerator dataSetGenerator(10000, 64);
+    DataSetGenerator dataSetGenerator(1000, 10);
 
     // Step 1: Get Data set
     vector<vector<double>> metricObjects = dataSetGenerator.generateDataNonUniformDistribution();

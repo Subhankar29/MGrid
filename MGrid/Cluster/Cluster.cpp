@@ -1,6 +1,7 @@
 #include "Cluster.h"
 #include "random"
 #include <cfloat>
+#include <limits>
 #include "../Pivot/PivotIncrementalSelection.h"
 
 vector<Cluster> Cluster::clusterData(vector<vector<double>> data, int k, int maxIterations) {
@@ -8,7 +9,7 @@ vector<Cluster> Cluster::clusterData(vector<vector<double>> data, int k, int max
     vector<Cluster> clusters(centroids.size());
 
     for (int i = 0; i < data.size(); i++) {
-      int minDistance = numeric_limits<double>::max();
+      double minDistance = numeric_limits<double>::max();
       int assignedClusterIndex = -1;
       for (int c = 0; c < centroids.size(); c++) {
         clusters[c].mean = centroids[c];
@@ -82,8 +83,10 @@ vector<vector<double>> Cluster::getCentroids(vector<vector<double>> data, int k,
           count++;
         }
       }
-      for(int d = 0; d < centroid.size(); ++d) {
-        centroid[d] /= count;
+      if (count > 0) {
+        for(int d = 0; d < centroid.size(); ++d) {
+          centroid[d] /= count;
+        }
       }
       centroids[j] = centroid;
     }

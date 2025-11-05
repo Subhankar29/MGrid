@@ -2,6 +2,8 @@
 #define MGRID_MGRID_H
 
 #include <vector>
+#include <map>
+#include <utility>
 #include "../Cluster/Cluster.h"
 #include "../Pivot/Pivot.h"
 
@@ -42,7 +44,7 @@ class MGrid {
     virtual vector<vector<double>> getPivots();
     map<int, map<int, vector<int>>>
     creatRings(vector<vector<double>> metricObject, vector<vector<double>>,
-               int numberOfPivots);
+               int numberOfRings);
     static int visitCluster(vector<vector<double>> data,
                             vector<double> queryObject, Cluster cluster,
                             double *currentNearestNeighbourDistance);

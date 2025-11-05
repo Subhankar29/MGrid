@@ -4,6 +4,8 @@
 #include <map>
 #include <utility>
 #include <chrono>
+#include <limits>
+#include <algorithm>
 
 using namespace std;
 
@@ -177,18 +179,27 @@ void MGrid::pruneClusters(
                 querySpaceRingEndIndex = ringId;
             }
 
-//      if (querySpaceRingStartIndex != -1 && querySpaceRingEndIndex != -1) {
-//        break;
-//      }
         }
 
         for (int i = 0; i < activeClusters->size(); i++) {
+            // Check if this pivot has metadata for this cluster
+            if ((*activeClusters)[i].pivotToRingResidingOfCluster.find(pivotId) == 
+                (*activeClusters)[i].pivotToRingResidingOfCluster.end()) {
+                continue; // Skip if no metadata for this pivot
+            }
+            
             int clusterStartRingId = (*activeClusters)[i].pivotToRingResidingOfCluster[pivotId].first;
             int clusterEndRingId = (*activeClusters)[i].pivotToRingResidingOfCluster[pivotId].second;
 
+            // Skip if query space wasn't found or if cluster overlaps with query space
+            if (querySpaceRingStartIndex == -1 || querySpaceRingEndIndex == -1) {
+                continue; // Can't prune if query space not properly identified
+            }
+
             if ((querySpaceRingStartIndex <= clusterStartRingId && clusterStartRingId <= querySpaceRingEndIndex)
-                || (querySpaceRingStartIndex <= clusterEndRingId && clusterEndRingId <= querySpaceRingEndIndex)) {
-                continue;
+                || (querySpaceRingStartIndex <= clusterEndRingId && clusterEndRingId <= querySpaceRingEndIndex)
+                || (clusterStartRingId <= querySpaceRingStartIndex && querySpaceRingEndIndex <= clusterEndRingId)) {
+                continue; // Cluster overlaps with query space, don't prune
             } else {
                 (*activeClusters)[i].isPruned = true;
             }
@@ -234,6 +245,10 @@ int MGrid::nnSearchAlgorithm(
         }
     }
 
+    if (activeClusters.empty()) {
+        return -1; // No active clusters to search
+    }
+
     int i = 0;
 
     int nearestNeighbourIndex = visitCluster(data, queryObject, activeClusters[i], &currentNearestNeighbourDistance);
@@ -263,7 +278,6 @@ int MGrid::nnSearchAlgorithm(
     }
 
     return nearestNeighbourIndex;
-
 }
 
 map<int, vector<Ring>> MGrid::getRingsForPivot() {
@@ -288,10 +302,9 @@ map<int, map<int, vector<int>>> MGrid::creatRings(
     // The inner created an index of the ring and vector<vector<double>> represents the rings
     map<int, map<int, vector<int>>> mapOfPivotsToMapOfRingsIndexesToTheDataPoints;
 
-    int ringSegmentCount = 1;
-
     // For each pivot calculate the distance to each object
     for (int i = 0; i < pivots.size(); i++) {
+        int ringSegmentCount = 1;
         vector<pair<double, vector<double>>> distances;
 
         // List Of Pair of index of the pivot to the list of points
@@ -315,7 +328,7 @@ map<int, map<int, vector<int>>> MGrid::creatRings(
         // Identify the number of points in each rings:
         //  if there are 10 rings and 100 points then each rings will have 10 points.
         int totalNumberOfPointsInOneSegment = metrics.size() / numberOfRings;
-        bool isOdd = metrics.size() % 2 != 0;
+        bool isOdd = metrics.size() % numberOfRings != 0;
         map<int, vector<int>> mapOfRingIndexToDataPoints;
         vector<int> listOfDataPointsInARingSegment;
 
@@ -340,6 +353,24 @@ map<int, map<int, vector<int>>> MGrid::creatRings(
                     listOfDataPointsInARingSegment.clear();
                     ringSegmentCount++;
                 }
+            }
+        }
+
+        // Handle any remaining points that weren't assigned to a ring
+        // This can happen if there are leftover points after distributing to rings
+        if (!listOfDataPointsInARingSegment.empty()) {
+            // Add remaining points to the last ring (or create last ring if needed)
+            int lastRingIndex = (ringSegmentCount <= numberOfRings) ? ringSegmentCount : numberOfRings;
+            if (mapOfRingIndexToDataPoints.find(lastRingIndex) != mapOfRingIndexToDataPoints.end()) {
+                // Append to existing ring
+                mapOfRingIndexToDataPoints[lastRingIndex].insert(
+                    mapOfRingIndexToDataPoints[lastRingIndex].end(),
+                    listOfDataPointsInARingSegment.begin(),
+                    listOfDataPointsInARingSegment.end()
+                );
+            } else {
+                // Create new ring
+                mapOfRingIndexToDataPoints[lastRingIndex] = listOfDataPointsInARingSegment;
             }
         }
 
@@ -397,7 +428,7 @@ int MGrid::visitCluster(
         vector<double> queryObject,
         Cluster cluster,
         double *currentNearestNeighbourDistance) {
-    int nearestNeighborObject;
+    int nearestNeighborObject = -1;
     for (auto index: cluster.listOfIndexes) {
         double distance = PivotIncrementalSelection::vectorDistance(queryObject, data[index]);
         if (distance < *currentNearestNeighbourDistance) {
