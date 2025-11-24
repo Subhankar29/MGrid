@@ -3,7 +3,14 @@
 
 #include "../Cluster/Cluster.h"
 #include "../Pivot/Pivot.h"
+#include <future>
 #include <vector>
+
+// ... (existing code)
+
+static int visitCluster(const vector<vector<double>> &data,
+                        const vector<double> &queryObject, Cluster cluster,
+                        double *currentNearestNeighbourDistance);
 
 struct Ring {
   double minDist;
@@ -42,8 +49,8 @@ public:
   map<int, map<int, vector<int>>>
   createRings(vector<vector<double>> metricObject, vector<vector<double>>,
               int numberOfPivots);
-  static int visitCluster(vector<vector<double>> data,
-                          vector<double> queryObject, Cluster cluster,
+  static int visitCluster(const vector<vector<double>> &data,
+                          const vector<double> &queryObject, Cluster cluster,
                           double *currentNearestNeighbourDistance);
   static int nnSearchAlgorithm(vector<vector<double>> pivots,
                                map<int, map<int, pair<double, double>>>

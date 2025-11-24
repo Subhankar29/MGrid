@@ -3,7 +3,9 @@
 #include <algorithm>
 #include <chrono>
 #include <cmath>
+#include <future>
 #include <map>
+#include <thread>
 #include <utility>
 
 using namespace std;
@@ -275,33 +277,53 @@ int MGrid::nnSearchAlgorithm(vector<vector<double>> pivots,
     }
   }
 
-  int i = 0;
+  // Determine the number of threads to use
+  unsigned int numThreads = std::thread::hardware_concurrency();
+  if (numThreads == 0)
+    numThreads = 2; // Fallback if hardware_concurrency returns 0
 
-  int nearestNeighbourIndex = visitCluster(data, queryObject, activeClusters[i],
-                                           &currentNearestNeighbourDistance);
-  nearestNeighbourDistance = currentNearestNeighbourDistance;
+  // Split activeClusters into chunks
+  size_t numClusters = activeClusters.size();
+  size_t chunkSize = (numClusters + numThreads - 1) / numThreads;
 
-  pruneClusters(queryObject, nearestNeighbourDistance, &activeClusters,
-                *mapOfPivotToListOfMinMaxDistancesToRings, pivots);
+  vector<std::future<pair<int, double>>> futures;
 
-  i++;
+  for (unsigned int t = 0; t < numThreads; ++t) {
+    size_t startIdx = t * chunkSize;
+    size_t endIdx = min(startIdx + chunkSize, numClusters);
 
-  // Prune the remaining cluster in a while loop.
+    if (startIdx >= endIdx)
+      break;
 
-  while (i < activeClusters.size()) {
+    futures.push_back(std::async(std::launch::async, [&data, &queryObject,
+                                                      &activeClusters, startIdx,
+                                                      endIdx]() {
+      double localMinDist = numeric_limits<double>::max();
+      int localMinIndex = -1;
 
-    if (!activeClusters[i].isPruned) {
-      nearestNeighbourIndex = visitCluster(data, queryObject, activeClusters[i],
-                                           &currentNearestNeighbourDistance);
+      for (size_t i = startIdx; i < endIdx; ++i) {
+        double currentDist = localMinDist;
+        int index =
+            visitCluster(data, queryObject, activeClusters[i], &currentDist);
 
-      if (currentNearestNeighbourDistance < nearestNeighbourDistance) {
-        nearestNeighbourDistance = currentNearestNeighbourDistance;
-        pruneClusters(queryObject, nearestNeighbourDistance, &activeClusters,
-                      *mapOfPivotToListOfMinMaxDistancesToRings, pivots);
+        if (currentDist < localMinDist) {
+          localMinDist = currentDist;
+          localMinIndex = index;
+        }
       }
-    }
+      return make_pair(localMinIndex, localMinDist);
+    }));
+  }
 
-    i++;
+  int nearestNeighbourIndex = -1;
+
+  // Aggregate results
+  for (auto &f : futures) {
+    pair<int, double> result = f.get();
+    if (result.second < nearestNeighbourDistance) {
+      nearestNeighbourDistance = result.second;
+      nearestNeighbourIndex = result.first;
+    }
   }
 
   return nearestNeighbourIndex;
@@ -448,8 +470,8 @@ MGrid::getMapOfPivotToListOfMinMaxDistancesToRings(
   return mapOfPivotToListOfMinMaxDistancesToRings;
 }
 
-int MGrid::visitCluster(vector<vector<double>> data, vector<double> queryObject,
-                        Cluster cluster,
+int MGrid::visitCluster(const vector<vector<double>> &data,
+                        const vector<double> &queryObject, Cluster cluster,
                         double *currentNearestNeighbourDistance) {
   int nearestNeighborObject;
   for (auto index : cluster.listOfIndexes) {
