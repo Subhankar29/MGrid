@@ -7,10 +7,22 @@
 
 using namespace std::chrono;
 
-int main() {
+  // Default values
+  int main(int argc, char* argv[]) {
+  int rows = 5000;
+  int dimensions = 32;
+
+  if (argc > 1) {
+    rows = std::stoi(argv[1]);
+  }
+  if (argc > 2) {
+    dimensions = std::stoi(argv[2]);
+  }
+
+  std::cout << "Running MGrid with Rows=" << rows << ", Dimensions=" << dimensions << std::endl;
 
   // Generate the data set:
-  DataSetGenerator dataSetGenerator(5000, 32);
+  DataSetGenerator dataSetGenerator(rows, dimensions);
 
   // Step 1: Get Data set
   vector<vector<double>> metricObjects =

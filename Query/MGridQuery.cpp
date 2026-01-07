@@ -8,4 +8,6 @@ void MGridQuery::insert(const MetricObject &metricObject) const {}
 
 void MGridQuery::deleteObject(const MetricObject &metricObject) const {}
 
-vector<MetricObject> MGridQuery::search(const QueryParameter &queryParameters) const {}
+vector<MetricObject> MGridQuery::search(const QueryParameter &queryParameters) const {
+  return {};
+}

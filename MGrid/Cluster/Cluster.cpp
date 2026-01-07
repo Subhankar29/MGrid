@@ -15,7 +15,7 @@ vector<Cluster> Cluster::clusterData(vector<vector<double>> data, int k, int max
     vector<Cluster> clusters(centroids.size());
 
     for (int i = 0; i < data.size(); i++) {
-      int minDistance = numeric_limits<double>::max();
+      double minDistance = numeric_limits<double>::max();
       int assignedClusterIndex = -1;
       for (int c = 0; c < centroids.size(); c++) {
         clusters[c].mean = centroids[c];
